@@ -44,7 +44,7 @@
 
 		<h2>Overview</h2>
 		In this homework, we implemented a rasterizer. This rasterizer includes features to draw single-color triangles, antialias with supersampling, transforms, implements barycentric coordinates, utilizes 
-		pixel sampling" for texture mapping, and includes "level sampling" with mipmaps for texture mapping as described in all the tasks below.
+		"pixel sampling" for texture mapping, and includes "level sampling" with mipmaps for texture mapping as described in all the tasks below.
 		After completing this homework, we learned how the different pixel and level sampling methods may not seem that different but in practice can have a pretty big difference visually when zooming into images.
 
 		<h2>Task 1: Drawing Single-Color Triangles</h2>
@@ -59,7 +59,8 @@
 
 		<p><u><b>Algorithm Explanation</b></u></p>
 		<p>
-			This algorithm is equivalent to checking each sample within the bounding box of the triangle, as we’re going through each pixel in the bounding box and seeing if it lies within the triangle. 
+			The algorithm runs in O(P) time given that P is the number of pixels in the triangle's bounding box, since we go through each pixel in the bounding box and seeing if it lies within the triangle and checking this is done in constant time.
+			As a result, this is no worse than an algorithm that checks each sample within the bounding box of the triangle.
 			We generate this bounding box by getting the min and max x and y values based on the three points of the triangle.
 		</p>
 
@@ -83,11 +84,11 @@
 		
 		<p><u><b>Supersampling Algorithm & Data Structures</b></u></p>
 		<p>
-			Supersampling is useful for antialiasing in order to make the jagged edges and sharp contrasts between colors smoothed out. 
+			Supersampling is useful for antialiasing because it reduces jagged edges and sharp contrasts between colors by sampling points within each pixel and averaging their colors. 
 			By averaging out the colors between boundaries, the overall shapes drawn are much smoother when viewed from close up. 
 			The way we modified our rasterization process was by breaking up each pixel into a sample_size number of mini-pixels, determining if each was within the bounds of the rasterization triangle, and coloring them accordingly. 
+			To do this, we modified the sample buffer to contain sample_rate samples per pixel. We write colors into the corresponding subpixel locations and then average the colors of all subpixels within each pixel to then write into the final framebuffer.
 			To do this, we resized the sample_buffer by sample_size in order to increase the number of pixels before averaging them. 
-			Once these mini-pixels’ colors were set, we set the overall larger pixel to their average color. 
 			We were thus able to use supersampling to antialias our triangles.
 		</p>
 
@@ -133,15 +134,17 @@
 		<p><u><b>Cubeman Modification Explanation</b></u></p>
 		<p>
 			We were attempting to make the right arm of our cubeman wave initially, but slowly added more features to make him more humanoid, like lowering his left hand and giving him style. 
-			Expect him to make an appearance at this year’s MET Gala.
+			We rotated the right arm upward and adjusted the position of the left arm downward. We did this using rotation and translation matrices.
 		</p>
 
 		<h2>Task 4: Barycentric Coordinates</h2>
 		<p><u><b>Barycentric Coordinates</b></u></p>
 		<p>
-			Barycentric coordinates are the weights of the three different triangle vertices. 
+			Barycentric coordinates are weighted combinations of the three triangle vertices. 
+			Each coordinate specifies how much each vertex influences the point and the the weights must sum to 1.
 			In our code, we define them as alpha, beta, and gamma. 
-			They help us take the weighted average of the color of each corner of the triangle to then fill in a corresponding pixel. 
+			We can also tell if a point is inside the triangle if alpha, beta, and gamma are all >= 0.
+			They help us take the weighted average of the color of each corner of the triangle to then fill in a corresponding pixel using interpolation. 
 			As shown in the image below, the color at any given point corresponds to its proportional distance between the point and the vertex and the point and the opposing side for all the vertices of the triangle.
 		</p>
 		<figure>
@@ -157,13 +160,14 @@
 		
 		<p><u><b>Pixel Sampling + Our Algorithm</b></u></p>
 		<p>
-			Pixel sampling allows 3D textures to showcase detail with compressed 2D textures by mapping small triangles that make up the 3D model onto specific coordinates of the 2D image.
+			Pixel sampling allows us to look at the corresponding (u, v) texture coordinate and sample these nearby coordinates to calculate the color of a specific pixel.
+			This allows us to properly map 2D textures onto 3D surface models.
 			<br>
 			Nearest pixel sampling looks at the texture value of the nearest sample location and uses that for a specific pixel. 
 			On the other hand, bilinear filtering pixel sampling takes the texture values of the four nearest sample locations and weights them by distance to find the texture value of a specific pixel.
 		</p>
 
-		<p><u><b>basic/test4.svg</b></u></p>
+		<p><u><b>basic/texmap/ SVG File</b></u></p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
@@ -194,7 +198,7 @@
 				  <img src="images/task5.3.png" width="400px"/>
 				  <figcaption>Nearest Sampling</figcaption>
 				</td>
-				<td style="text-align: center;">x
+				<td style="text-align: center;">
 				  <img src="images/task5.4.png" width="400px"/>
 				  <figcaption>Bilinear Sampling</figcaption>
 				</td>
@@ -218,6 +222,7 @@
 			Level sampling takes color averages of a certain number of close by pixels based on the mipmap level in a reference image in such a way that a resulting texture mapped from the reference image can be rendered with minimal moire patterns and more efficiently.  
 			<br>
 			The way we implemented level sampling was by calculating which pre-computed mipmap level to use for every set of barycentric coordinates and running the pixel sampling from task 5 as normal. 
+			We calculated the mipmap level using the derivatives of the corresponding (u, v) texture coordinates.
 			The specific level for a pair of barycentric coordinates is tied to how much change occurs when mapping from pixels to texels, and corresponds to how much a specific color pixel is “shrunk” from one to the other.
 		</p>
 
