@@ -32,49 +32,51 @@
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
-		
-		<figure>
-			<img src="cornell.png" alt="Cornell Boxes with Bunnies" style="width:70%"/>
-			<figcaption>You can add images with captions!</figcaption>
-		</figure>
+		Link to webpage: <a href="https://cal-cs184-student.github.io/hw-webpages-yrao104/hw3/index.html">https://cal-cs184-student.github.io/hw-webpages-yrao104/hw3/index.html</a>
+		Link to GitHub repository: <a href="https://github.com/cal-cs184-student/hw3-pathtracer-math-nerds12">https://github.com/cal-cs184-student/hw3-pathtracer-math-nerds12</a>
 
 		<!--
 		We've already added one heading per part, to make your write-up as navigable when grading. Please fit your write-up within these sections!
 		-->
 
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+		TODO!!! Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
 
 		<h2>Part 1: Ray Generation and Scene Intersection</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
-		<div style="display: flex; flex-direction: column; align-items: center;">
-			<table style="width: 100%; text-align: center; border-collapse: collapse;">
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			</table>
-		</div>
+		<p><u><b>Ray Generation + Primitive Intersection</b></u></p>
+		<p>
+			To generate rays from the camera perspective, I first transformed the given image coordinates to the camera space using the formulas mapping the image coordinates to the sensor range. 
+			Specifically, I used the formulas for the bottom left corner and top right corner of the virtual camera sensor to help with this.
+			Then, I transformed the ray to the world space by multiplying it by c2w, the camera-to-world rotation matrix. Lastly, I set the min_t and max_t values to nClip and fClip.
+
+			Next, to generate pixel samples, I looped through ns_aa samples of camera rays and generated samples from the gridSampler.
+			I then normalized the sample coordinates by the width and height of the image, estimated the global radiance, and finally averaged the cumulative value.
+
+			Primitive intersection essentially samples the ray along the scene to find the closest intersection point from min_t to max_t.
+		</p>
+
+		<p><u><b>Triangle Intersection Algorithm</b></u></p>
+		<p>
+			I utilized the Moller Trumbore algorithm for triangle intersection. 
+			Using the formula, I calculated the scalar values for t, b_1, and b_2.
+			To check whether the ray was in the triangle, I ensured that the denominator dot product between s_1 and e_1 was not equal to 0, b1 and b2 were >= 0, t was in the ray bounds, and b1 + b2 was <= 1.
+			To calculate the surface normal of the intersection, I used the formula (1 - b_1 - b_2)*n_1 + b_1*n_2 + b_2*n_3.
+		</p>
+
+		<p><u><b>Images with Normal Shading</b></u></p>
+		<figure>
+			<img src="images/1.1.png" alt="basic/1.1.svg" style="width:50%"/>
+			<figcaption>/dae/sky/CBspheres_lambertian.dae</figcaption>
+		</figure>
+		<figure>
+			<img src="images/1.3.png" alt="basic/1.3.svg" style="width:50%"/>
+			<figcaption>/dae/sky/CBbunny.dae</figcaption>
+		</figure>
+		<figure>
+			<img src="images/1.2.png" alt="basic/1.2.svg" style="width:50%"/>
+			<figcaption>/dae/sky/CBgems.dae</figcaption>
+		</figure>
 		
 		<h2>Part 2: Bounding Volume Hierarchy</h2>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
