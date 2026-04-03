@@ -337,6 +337,8 @@
 		<p>
 			For the set of bunnies where light bounces are unaccumulated, when the max ray depth becomes 2, the images change dramatically from when max ray depth is 1, as the image becomes noticeably darker while the contrast between the bright spots of the bunny and the shadows lessens. 
 			Although the quality of the image seems to increase as max ray depth does, the brightness of the overall image also seems to decrease in turn. 
+			The 2nd bounce of light starts making the shadows much less harsh and also makes the quality of the image better.
+			On the other hand, the 3rd bounce of light amplifies this effect by reducing the contrast and also improving the image quality of the rendered image.
 		</p>
 
 		<p><u><b>Accumulated vs Unaccumulated Light Bouncing Bunnies</b></u></p>
@@ -452,6 +454,7 @@
 			<br />
 
 			To implement this, we keep the loop as before from Part 1.2, but now we also keep track of the summed illuminance and squared illuminance, and every time we iterate samplesPerBatch iterations, we check to see if our confidence in our illumination lies within the 95% and above interval, which if it does we terminate iteration early for the given sample.
+			We did this by estimating the variance and checking if the confidence interval met the tolerance threshold.
 		</p>
 
 		<p><u><b>Adaptive Sampling Examples</b></u></p>
