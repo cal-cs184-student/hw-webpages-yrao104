@@ -41,8 +41,11 @@
 		-->
 
 		<h2>Overview</h2>
-		TODO!!! Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
-
+		In this homework, we implemented a physically-based renderer utilizing a pathtracing algorithm. 
+		We generate camera rays, compute scene intersections, and make rendering faster using bounding volume hierarchy. We also implemented direct and global illumination as well as adaptive sampling.
+		After completing this homework, we learned how minor modifications in the algorithm can make such a big difference both visually and in terms of performance.
+		For instance, techniques like BVH acceleration can immensely reduce the time it takes to render images.
+		
 		<h2>Part 1: Ray Generation and Scene Intersection</h2>
 
 		<p><u><b>Ray Generation + Primitive Intersection</b></u></p>
@@ -115,27 +118,368 @@
 		</p>
 
 		<h2>Part 3: Direct Illumination</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+		<p><u><b>Direct Lighting with Uniform Hemisphere Sampling</b></u></p>
+		<p>
+			This implementation closely follows the steps outlined in the task’s spec. 
+			For a given sample size, iteratively randomly sample rays outgoing from the hemisphere and create a shadow ray from the hit point based on this ray. 
+			From there, trace the ray into the scene and detect if the ray hits a light source, which if it does, evaluate the BSDF value and angle of reflection to determine how much light is contributed to the camera. 
+		</p>
+
+		<p><u><b>Direct Lighting with Importance Sampling Lights</b></u></p>
+		<p>
+			This implementation closely follows the steps outlined in the task’s spec. 
+			For each light source, determine if the hit point is blocked from the camera, which if it isn’t, calculate the light contribution to the camera as before using an evaluated BSDF value and the angle of reflection off the hit point.
+		</p>
+
+		<p><u><b>Examples</b></u></p>
+
+		<p>Uniform Hemisphere Sampling</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/3.1.png" width="400px"/>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/3.2.png" width="400px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p>Importance Sampling</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/3.3.png" width="400px"/>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/3.4.png" width="400px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p><u><b>Noise Levels in Soft Shadows Comparison</b></u></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/3.5.png" width="400px"/>
+				  <figcaption>1 light ray</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/3.6.png" width="400px"/>
+				  <figcaption>4 light rays</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/3.7.png" width="400px"/>
+				  <figcaption>16 light rays</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/3.8.png" width="400px"/>
+				  <figcaption>64 light rays</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p>
+			As the number of light rays increases, the noisiness in the softer shadows in this image with the spheres begins to dissipate. 
+			For example, softer shadows in the 1 light ray example are displayed as an intermixing between gray white pixels, whereas once you get to the 64 light rays example the softer shadows are displayed as a uniform color between black and gray.
+		</p>
+
+		<p><u><b>Comparing Sampling Results</b></u></p>
+		<p>
+			Uniform hemisphere sampling tends to form the image with many small, scattered dots rather than a single, continuous image. 
+			This makes sense as rather than a systematic calculation to track how light bounces off the objects in the scene as a whole, randomly selected angles from each hemisphere for a set number of samples are used. 
+			This creates inconsistencies across the image. 
+			Importance Sampling on the other hand creates a consistent color sheen over the image, though as a trade off it does seem to make the subject of each image, such as the bunny in the room, blurrier in contrast to the uniform hemisphere sampling case. 
+		</p>
 
 		<h2>Part 4: Global Illumination</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		
+		<p><u><b>Indirect Lighting Function</b></u></p>
+		<p>
+			This implementation closely follows the steps outlined in the task’s spec. 
+			This function recursively calls itself, with the base case being when the depth reaches 1 or if the russian roulette coin flip hits and the recursion is terminated early. 
+			At every recursive step, the amount of light given off is calculated, the next sampled point is found and the recursive function is called to determine the amount of light contributed. 
+			Finally, after adding the russian roulette portion for task 3, there’s an additional chance for early termination at every recursive level. 
+		</p>
+
+		<p><u><b>Examples</b></u></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.1.png" width="400px"/>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.2.png" width="400px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p><u><b>Direct vs. Indirect Comparison</b></u></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.3.png" width="400px"/>
+				  <figcaption>Direct</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.4.png" width="400px"/>
+				  <figcaption>Indirect</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p><u><b>Unaccumulated Light Bouncing Bunnies</b></u></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.5.png" width="400px"/>
+				  <figcaption>max ray depth = 0</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.6.png" width="400px"/>
+				  <figcaption>max ray depth = 1</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.7.png" width="400px"/>
+				  <figcaption>max ray depth = 2</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.8.png" width="400px"/>
+				  <figcaption>max ray depth = 3</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.9.png" width="400px"/>
+				  <figcaption>max ray depth = 4</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.10.png" width="400px"/>
+				  <figcaption>max ray depth = 5</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p><u><b>Accumulated Light Bouncing Bunnies</b></u></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.11.png" width="400px"/>
+				  <figcaption>max ray depth = 0</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.12.png" width="400px"/>
+				  <figcaption>max ray depth = 1</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.13.png" width="400px"/>
+				  <figcaption>max ray depth = 2</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.14.png" width="400px"/>
+				  <figcaption>max ray depth = 3</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.15.png" width="400px"/>
+				  <figcaption>max ray depth = 4</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.16.png" width="400px"/>
+				  <figcaption>max ray depth = 5</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p><u><b>Unaccumulated Light Bouncing Bunnies Observations</b></u></p>
+		<p>
+			For the set of bunnies where light bounces are unaccumulated, when the max ray depth becomes 2, the images change dramatically from when max ray depth is 1, as the image becomes noticeably darker while the contrast between the bright spots of the bunny and the shadows lessens. 
+			Although the quality of the image seems to increase as max ray depth does, the brightness of the overall image also seems to decrease in turn. 
+		</p>
+
+		<p><u><b>Accumulated vs Unaccumulated Light Bouncing Bunnies</b></u></p>
+		<p>
+			In comparison, the accumulated light bouncing bunnies strictly seem to increase in quality as the max ray parameter increases, as more realistic shading is present like in the unaccumulated bunnies case as depth increases, but the overall brightness of the image doesn’t diminish.
+		</p>
+
+		<p><u><b>Russian Roulette Bunnies</b></u></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.11.png" width="400px"/>
+				  <figcaption>max ray depth = 0</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.12.png" width="400px"/>
+				  <figcaption>max ray depth = 1</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.13.png" width="400px"/>
+				  <figcaption>max ray depth = 2</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.14.png" width="400px"/>
+				  <figcaption>max ray depth = 3</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.15.png" width="400px"/>
+				  <figcaption>max ray depth = 4</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.16.png" width="400px"/>
+				  <figcaption>max ray depth = 100</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p><u><b>Samples-Per-Pixel Bunnies</b></u></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.17.png" width="400px"/>
+				  <figcaption>max ray depth = 1</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.18.png" width="400px"/>
+				  <figcaption>max ray depth = 2</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.19.png" width="400px"/>
+				  <figcaption>max ray depth = 4</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.20.png" width="400px"/>
+				  <figcaption>max ray depth = 8</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.21.png" width="400px"/>
+				  <figcaption>max ray depth = 16</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/4.22.png" width="400px"/>
+				  <figcaption>max ray depth = 64</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/4.23.png" width="400px"/>
+				  <figcaption>max ray depth = 1024</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
 
 		<h2>Part 5: Adaptive Sampling</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-		<h2>(Optional) Part 6: Extra Credit Opportunities</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 		
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
+		<p><u><b>Adaptive Sampling + Implementation</b></u></p>
+		<p>
+			Adaptive sampling saves computing power compared to the previous illumination techniques by stopping sampling early for pixels whose color has converged to a certain brightness. 
+			By making this change, flat surfaces like the walls converge and complete computation much quicker, leaving more compute time for edges of surfaces and more importantly complex textures like the surface of a bunny or sphere.
+
+			<br />
+
+			To implement this, we keep the loop as before from Part 1.2, but now we also keep track of the summed illuminance and squared illuminance, and every time we iterate samplesPerBatch iterations, we check to see if our confidence in our illumination lies within the 95% and above interval, which if it does we terminate iteration early for the given sample.
+		</p>
+
+		<p><u><b>Adaptive Sampling Examples</b></u></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/5.1.png" width="400px"/>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/5.2.png" width="400px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="images/5.3.png" width="400px"/>
+				</td>
+				<td style="text-align: center;">
+				  <img src="images/5.4.png" width="400px"/>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		
 		</div>
 	</body>
 </html>
