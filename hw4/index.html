@@ -43,10 +43,11 @@
 		-->
 
 		<h2>Overview</h2>
-		In this homework, we implemented a physically-based renderer utilizing a pathtracing algorithm. 
-		We generate camera rays, compute scene intersections, and make rendering faster using bounding volume hierarchy. We also implemented direct and global illumination as well as adaptive sampling.
+		In this homework, we implemented a physically-based cloth simulation using a system involving point masses and springs. 
+		We generate point masses and springs, utilize numerical integration for motion, and take care of collisions with other objects. 
+		We also implemented shaders to render the cloth with much more realistic lighting.
 		After completing this homework, we learned how minor modifications in the algorithm can make such a big difference both visually and in terms of performance.
-		For instance, techniques like BVH acceleration can immensely reduce the time it takes to render images.
+		For instance, techniques like varying simulation parameters such as spring constants, density, and damping, can make a huge difference in the appearance of the cloth.
 
 		<h2>Part 1: Masses and Springs</h2>
 		
